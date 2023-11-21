@@ -1,0 +1,359 @@
+sessionInfo()
+
+###-------------------------install packages------------------------------###
+install.packages("pacman")
+install.packages("BiocManager")             #provider of DESeq2
+
+BiocManager::install("DESeq2")
+BiocManager::install("apeglm")
+BiocManager::install("BiocParallel")
+BiocManager::install("sva")
+BiocManager::install("vsn")
+install.packages("apeglm")
+install.packages("dplyr")
+install.packages("dfidx")
+install.packages("stats")
+install.packages("ggplot2")
+install.packages("ggpubr")
+install.packages("ggfortify")
+install.packages("pheatmap")
+install.packages("rmarkdown")
+
+
+###-------------------------import packages-------------------------------###
+library("pacman")
+library("BiocParallel")
+library("apeglm")
+library("DESeq2")
+library("sva")
+library("vsn")
+library("dplyr")
+library("stats")
+library("dfidx")
+library("ggplot2")
+library("ggpubr")
+library("ggfortify")
+library("pheatmap")
+library("rmarkdown")
+
+packageList <- c("pacman", "BiocParallel", "DESeq2", "apgelm", "sva", "vsn", "dplyr", "stats",  "dfidx", "ggplot2", "ggpubr", "ggfortify", "pheatmap", "rmarkdown")
+citationList <- list()
+
+for (package in packageList){
+  citationList[[package]] <- citation(package)
+  print(citationList)
+}
+
+
+###-----------------------set wd and import files-------------------------###
+getwd()
+#setwd("D:\\Nextcloud\\Lucas\\in-silico Data\\#bulk\\GSE121212_analysis")
+setwd("C:\\Users\\lucas\\Nextcloud\\Kurschus Lab\\Lucas\\in-silico Data\\#bulk\\GSE121212_analysis")
+
+###import files
+meta_data <- read.delim("GSE121212_meta_data_collapsed_disease_type.txt", row.names = 1, header = TRUE)
+#the original meta file only contained the columns "patient", "paient ID" and "condition"
+#the meta data used here is a modified version of the original one
+#the following columns were added "patient.id" - a continuing numbering of patients, so that each patient has a unique id
+#"disease" - only the diseases -> for grouping in graphs
+#"samples.type" - only the samples types, for grouping in graphs
+
+count_matrix <- read.delim("GSE121212_readcount.txt", header = T)
+#count_matrix file contains duplicates in rows -> assigning row.names = 1 here as well would result in an error
+
+
+###------------prepare files for construction of the dds object-------------###
+
+#ERROR -> duplicate row names present
+count_matrix$gene
+anyDuplicated(count_matrix$gene)       #->13535
+  as.vector(count_matrix$gene[13535])   #check what the duplicate is
+  count_matrix$gene[13535] = "1-Mar1"   #changed value in gene coloumn to 1-Mar1
+  as.vector(count_matrix$gene[13535])   #check again if changed
+anyDuplicated(count_matrix$gene)      #->13537
+  as.vector(count_matrix$gene[13537])   #check what the duplicate is
+  count_matrix$gene[13537] = "2-Mar1"   #changed value in gene coloumn to 2-Mar1
+  as.vector(count_matrix$gene[13537])   #check again if changed
+anyDuplicated(count_matrix$gene)        #->no duplicates anymore
+
+###inspect data
+meta_data
+head(meta_data)
+nrow(meta_data)
+ncol(meta_data)
+dim(meta_data) #->147 x 5
+
+count_matrix
+head(count_matrix)
+nrow(count_matrix)
+ncol(count_matrix)
+dim(count_matrix) #-> 31364 x 148
+
+row.names(count_matrix) <- count_matrix$gene  #assigns "gene" column to row.names
+count_matrix_new <- count_matrix[, -1]
+
+#ERROR -> rownames of meta_data and colnames of count_matrix don't match 
+#(some have . for _)
+head(count_matrix_new,0)
+row.names(meta_data)
+row.names(meta_data) <- gsub("non_lesional", "non.lesional", row.names(meta_data))
+row.names(meta_data)
+
+#recommended to only use _ and . as separators, changing this in the levels of factor sample.type
+meta_data$sample.type
+meta_data$sample.type <- gsub("non-lesional", "non.lesional", meta_data$sample.type)
+meta_data$sample.type
+#and in the levels of factor disease
+meta_data$disease
+meta_data$disease <- gsub("chronic AD", "chronic_AD", meta_data$disease)
+meta_data$disease
+
+#assign factors to be able to adjust settings of the analysis
+FactorList(meta_data)
+meta_data$condition <- factor(meta_data$condition)
+meta_data$patient.ID <- factor(meta_data$patient.ID)
+meta_data$patient.id <- factor(meta_data$patient.id)
+meta_data$disease <- factor(meta_data$disease)
+meta_data$sample.type <- factor(meta_data$sample.type)
+
+#subset meta data to remove the psorais patient, that doesnt have a paired non-lesional and lesional sample
+meta_data_subset <- meta_data
+meta_data_subset <- meta_data_subset[meta_data_subset$patient.id !=  334, ]
+meta_data_subset
+class(meta_data_subset$condition)
+levels(meta_data_subset$condition)
+
+#drop levels with no samples
+levels(meta_data_subset$condition)
+droplevels(meta_data_subset)
+
+#also remove the patient from the count matrix
+samples_to_exclude <- "PSO_034_lesional"
+samples_to_exclude
+count_matrix_subset <- count_matrix_new[, !colnames(count_matrix_new) %in% samples_to_exclude]
+head(count_matrix_subset)
+
+
+###--------------------constructing the DESeq2 data set (dds)---------------###
+dds <- DESeqDataSetFromMatrix(countData = count_matrix_subset,
+                              colData = meta_data_subset,
+                              design = ~ patient.ID + condition)
+
+
+###----------------------------DE gene analysis-----------------------------###
+nrow(dds)
+keep <- rowSums(counts(dds)) > 1 #keeps row with > 0 counts
+dds <- dds[keep,]
+
+dds$condition <- relevel(dds$condition, ref = "CTRL_healthy")
+
+dds_res <- DESeq(dds, parallel = TRUE, BPPARAM = SnowParam(4)) #runs the DESeq2 analysis
+
+
+###---------------removing batch effects with large sample sizes > 50-------###
+resultsNames(dds_res)
+#explanation: ?svaseq()
+dat <- counts(dds_res, normalized=TRUE)
+idx <- rowMeans(dat) > 1
+dat <- dat[idx,]
+mod <- model.matrix(~ patient.ID + condition, meta_data_subset)
+mod0 <- model.matrix(~ 1, colData(dds_res))
+svseq <- svaseq(dat, mod, mod0, n.sv=2)
+
+svseq$sv #shows the surrogate variables generated
+
+#check how the surrogate veriable look for both the models
+par(mfrow=c(2,1),mar=c(3,5,3,1))
+stripchart(svseq$sv[,1] ~ dds$patient.id,vertical=TRUE,main="SV1")
+abline(h=0)
+stripchart(svseq$sv[,2] ~ dds$patient.id,vertical=TRUE,main="SV2")
+abline(h=0)
+
+#use the sva by adding them to dds as columns
+ddssva <- dds_res
+ddssva$SV1 <- svseq$sv[,1]
+ddssva$SV2 <- svseq$sv[,2]
+
+design(ddssva) <- ~ SV1 + SV2 + patient.ID + condition
+#produce results with the new design, controlling for surrogate variables
+
+dds_sva_res <- DESeq(ddssva)
+
+#70 rows didn't converge -> stored in mcols(dds_res)$betaconv
+mcols(dds_sva_res)$betaconv #-> says "NULL"
+#these should be the rows for the empty factor levels for healthy with SV1 and SV2
+#should be acceptable
+
+results <- results(dds_res)
+results_sva <- results(dds_sva_res)
+resultsNames(dds_res)
+resultsNames(dds_sva_res)
+results
+results_sva
+summary(results)
+summary(results_sva)
+
+
+resOrdered <- results[order(results$padj),] #-> order results by smallest p-value increasing
+summary(resOrdered)
+head(resOrdered)
+resOrdered_corrected <- results_sva[order(results_sva$padj),]
+summary(resOrdered_corrected)
+head(resOrdered_corrected)
+
+write.csv(as.data.frame(resOrdered),
+          row.names = TRUE,
+          "resOrdered.csv")
+write.csv(as.data.frame(resOrdered_corrected),
+          row.names = TRUE,
+          "resOrdered_corrected.csv")
+read.csv("resOrdered_corrected.csv")
+#resOrdered_corrected["GPR183"] to check for a single entry, but this is only for one comparison
+
+#more DEGs with sva, which makes sense, because it should identify DEGs more efficiently
+#because it accounts for patient variances that and therefore identifies true DEGs
+#use sva values from here!
+
+dds <- ddssva
+dds_res <- dds_sva_res
+
+saveRDS(dds, "dds_object.rds")
+saveRDS(dds_res, "dds_res_object.rds")
+write.csv(assay(dds, normalized = TRUE), file = 'normalized_counts_dds.csv')
+write.csv(meta_data_subset, file = 'meta_data_subset_object.csv')
+
+###--------------data transformation for visualization and QC--------------###
+#The point of these two transformations, the VST and the rlog, is to remove the
+#dependence of the variance on the mean, particularly the high variance of the 
+#logarithm of count data when the mean is low. this means, that the variance
+#is higher, when there are a lot of counts (mean is high). This results in the 
+#PCA being more dependent on the high count genes, which is not desired.
+#Both VST and rlog use the experiment-wide trend of variance over mean, 
+#in order to transform the data to remove the experiment-wide trend.
+#vst = variance stabilizing transformation, recommended for n > 30.
+
+vsd <- vst(dds, blind=FALSE) 
+vsd
+
+meanSdPlot(assay(vsd)) #plots the SD for the data after the transformation
+
+#for visualization its recommend to use shrunken values with lfcShrink()
+#number 43 is from the resultsNames() -> psoriasis lesional vs healthy
+dds_shrink_PL_H <- lfcShrink(dds,
+                             coef = 43,
+                             type = "apeglm")
+
+###---------------quality assessment and visualization---------------------###
+
+###pheatmap
+dds <- estimateSizeFactors(dds)
+#select the top 50 DEGs and store the gene names in a variable
+select <- row.names(head(dds_shrink_PL_H[order(dds_shrink_PL_H$padj), ], 50))
+select
+
+#create a df used for the heatmap
+df <- as.data.frame(colData(dds)[, c("disease", "sample.type")])
+rownames(df) <- row.names(df)
+custom_color <- list(
+  sample.type = c('non.lesional' = 'lightgrey', 'lesional' = '#F44336'),
+  disease = c('healthy' = 'lightgrey', 'psoriasis' = 'steelblue', 'AD' = '#FFCC80', 'chronic_AD' = '#D32F2F'))
+pheatmap(assay(vsd)[select,],
+         cluster_rows=TRUE, 
+         cluster_cols=TRUE, 
+         annotation_col=df,
+         fontsize_col = 2,
+         fontsize_row = 7,
+         show_colnames = FALSE,
+         show_rownames = TRUE,
+         treeheight_row = 0,
+         main = "clustering - top 50 DEGs of PSO_L_vs_H",
+         annotation_colors = custom_color,
+         color = colorRampPalette(c("#4A148C", "#FFF9C4", "#FF7043"))(100)
+         )
+#shows: roughly healthy and non-lesional samples are clustered together and 
+#look rather distinct in heatmap
+
+###PCA
+#collect the top 5000 gene in a variable, grouped by condition
+pcaData <- plotPCA(vsd, intgroup=c("condition"), returnData = TRUE, ntop = 5000)
+percentVar <- round(100 * attr(pcaData, "percentVar"))
+ggplot(pcaData, aes(PC1, PC2, color=condition)) +
+  geom_point(size=3) +
+  xlab(paste0("PC1: ",percentVar[1],"% variance")) +
+  ylab(paste0("PC2: ",percentVar[2],"% variance")) +
+  ggtitle("PCA - top 5000 genes") +
+  coord_fixed() +
+  #stat_ellipse(aes(group = condition), type = "norm", level = 0.95, linewidth = 1) +
+  theme(
+    panel.background = element_rect(fill = "transparent",
+                                    colour = NA_character_), # necessary to avoid drawing panel outline
+    panel.grid.major = element_blank(), # get rid of major grid
+    panel.grid.minor = element_blank(), # get rid of minor grid
+    plot.background = element_rect(fill = "transparent",
+                                   colour = NA_character_), # necessary to avoid drawing plot outline
+    legend.background = element_rect(fill = "transparent"),
+    legend.key = element_rect(fill = "transparent"),
+    axis.line.x.bottom=element_line(color="black"),
+    axis.line.y.left=element_line(color="black"),
+    plot.title = element_text(hjust = 0.5)
+  ) +
+  scale_color_manual(values = c("grey", "#FFB300", "#FFECB3", "#B71C1C", "#EF9A9A", "#283593", "#9FA8DA"))
+ 
+##results quality assessment: 
+#healthy and non-leasional samples are generally more similar to each other 
+#than to lesional samples from the same patients
+#-> this is to be expected and suggests good quality of samples
+
+
+###------------------DEG analysis - pair-wise comparisons------------------###
+
+#PSO
+#Perform DESeq2 analysis
+result_PSO <- results(dds_res, contrast = c('condition', 'PSO_lesional', 'PSO_non_lesional'), independentFiltering = TRUE, alpha = 0.05, pAdjustMethod = "BH", parallel = TRUE)
+#filter out NAs from the padj columns as well as all padj < 0.1
+filtered_genes <- result_PSO[!is.na(result_PSO$padj) & result_PSO$padj < 0.1, ]
+#Order and save the filtered results to a CSV file
+filtered_genes_ordered <- filtered_genes[order(filtered_genes$padj), ]
+#write as a csv file
+write.csv(as.data.frame(filtered_genes_ordered), row.names = TRUE, file.path("C:\\Users\\lucas\\Nextcloud\\Kurschus Lab\\Lucas\\in-silico Data\\#bulk\\GSE121212_analysis", "DEGs_PSO_NL_vs_PSO_L.csv"))
+#save the object
+saveRDS(result_PSO, "DEG_Analysis_result_PSO.rds")
+summary(result_AD)
+
+#AD
+result_AD <- results(dds_res, contrast = c('condition', 'AD_lesional', 'AD_non_lesional'), independentFiltering = TRUE, alpha = 0.05, pAdjustMethod = "BH", parallel = TRUE)
+filtered_genes <- result_AD[!is.na(result_AD$padj) & result_AD$padj < 0.1, ]
+filtered_genes_ordered <- filtered_genes[order(filtered_genes$padj), ]
+write.csv(as.data.frame(filtered_genes_ordered), row.names = TRUE, file.path("C:\\Users\\lucas\\Nextcloud\\Kurschus Lab\\Lucas\\in-silico Data\\#bulk\\GSE121212_analysis", "DEGs_AD_NL_vs_AD_L.csv"))
+saveRDS(result_AD, "DEG_Analysis_result_AD.rds")
+
+#chronic AD
+result_CAD <- results(dds_res, contrast = c('condition', 'CAD_chronic_lesion', 'CAD_non_lesional'), independentFiltering = TRUE, alpha = 0.05, pAdjustMethod = "BH", parallel = TRUE)
+filtered_genes <- result_CAD[!is.na(result_CAD$padj) & result_CAD$padj < 0.1, ]
+filtered_genes_ordered <- filtered_genes[order(filtered_genes$padj), ]
+write.csv(as.data.frame(filtered_genes_ordered), row.names = TRUE, file.path("C:\\Users\\lucas\\Nextcloud\\Kurschus Lab\\Lucas\\in-silico Data\\#bulk\\GSE121212_analysis", "DEGs_CAD_NL_vs_CAD_L.csv"))
+saveRDS(result_CAD, "DEG_Analysis_result_CAD.rds")
+
+#PSO L vs Healthy
+result_PSO_H <- results(dds_res, contrast = c('condition', 'PSO_lesional', 'CTRL_healthy'), independentFiltering = TRUE, alpha = 0.05, pAdjustMethod = "BH", parallel = TRUE)
+filtered_genes <- result_PSO_H[!is.na(result_PSO_H$padj) & result_PSO_H$padj < 0.1, ]
+filtered_genes_ordered <- filtered_genes[order(filtered_genes$padj), ]
+write.csv(as.data.frame(filtered_genes_ordered), row.names = TRUE, file.path("C:\\Users\\lucas\\Nextcloud\\Kurschus Lab\\Lucas\\in-silico Data\\#bulk\\GSE121212_analysis", "DEGs_CTRL_H_vs_PSO_L.csv"))
+saveRDS(result_PSO_H, "DEG_Analysis_result_PSO_H.rds")
+
+#AD L vs Healthy
+result_AD_H <- results(dds_res, contrast = c('condition', 'AD_lesional', 'CTRL_healthy'), independentFiltering = TRUE, alpha = 0.05, pAdjustMethod = "BH", parallel = TRUE)
+filtered_genes <- result_AD_H[!is.na(result_AD_H$padj) & result_AD_H$padj < 0.1, ]
+filtered_genes_ordered <- filtered_genes[order(filtered_genes$padj), ]
+write.csv(as.data.frame(filtered_genes_ordered), row.names = TRUE, file.path("C:\\Users\\lucas\\Nextcloud\\Kurschus Lab\\Lucas\\in-silico Data\\#bulk\\GSE121212_analysis", "DEGs_CTRL_H_vs_AD_L.csv"))
+saveRDS(result_AD_H, "DEG_Analysis_result_AD_H.rds")
+
+#CAD L vs Healthy
+result_CAD_H <- results(dds_res, contrast = c('condition', 'CAD_chronic_lesion', 'CTRL_healthy'), independentFiltering = TRUE, alpha = 0.05, pAdjustMethod = "BH", parallel = TRUE)
+filtered_genes <- result_CAD_H[!is.na(result_CAD_H$padj) & result_CAD_H$padj < 0.1, ]
+filtered_genes_ordered <- filtered_genes[order(filtered_genes$padj), ]
+write.csv(as.data.frame(filtered_genes_ordered), row.names = TRUE, file.path("C:\\Users\\lucas\\Nextcloud\\Kurschus Lab\\Lucas\\in-silico Data\\#bulk\\GSE121212_analysis", "DEGs_CTRL_H_vs_CAD_L.csv"))
+saveRDS(result_CAD_H, "DEG_Analysis_result_CAD_H.rds")
+
+###-------------------------session and packacge info-----------------------###
+devtools::session_info()
