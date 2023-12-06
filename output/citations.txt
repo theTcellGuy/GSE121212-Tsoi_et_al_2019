@@ -1,0 +1,246 @@
+[1] "pacman"
+To cite pacman in publications, please use:
+
+  Rinker, T. W. & Kurkiewicz, D. (2017). pacman: Package Management for
+  R. version 0.5.0. Buffalo, New York. http://github.com/trinker/pacman
+
+Ein BibTeX-Eintrag für LaTeX-Benutzer ist
+
+  @Manual{,
+    title = {{pacman}: {P}ackage Management for {R}},
+    author = {Tyler W. Rinker and Dason Kurkiewicz},
+    address = {Buffalo, New York},
+    note = {version 0.5.0},
+    year = {2018},
+    url = {http://github.com/trinker/pacman},
+  }
+[1] "BiocParallel"
+Um Paket ‘BiocParallel’ in Publikationen zu zitieren, nutzen Sie bitte:
+
+  Morgan M, Wang J, Obenchain V, Lang M, Thompson R, Turaga N (2023).
+  _BiocParallel: Bioconductor facilities for parallel evaluation_.
+  doi:10.18129/B9.bioc.BiocParallel
+  <https://doi.org/10.18129/B9.bioc.BiocParallel>, R package version
+  1.36.0, <https://bioconductor.org/packages/BiocParallel>.
+
+Ein BibTeX-Eintrag für LaTeX-Benutzer ist
+
+  @Manual{,
+    title = {BiocParallel: Bioconductor facilities for parallel evaluation},
+    author = {Martin Morgan and Jiefei Wang and Valerie Obenchain and Michel Lang and Ryan Thompson and Nitesh Turaga},
+    year = {2023},
+    note = {R package version 1.36.0},
+    url = {https://bioconductor.org/packages/BiocParallel},
+    doi = {10.18129/B9.bioc.BiocParallel},
+  }
+[1] "DESeq2"
+Um Paket ‘DESeq2’ in Publikationen zu zitieren, nutzen Sie bitte:
+
+  Love, M.I., Huber, W., Anders, S. Moderated estimation of fold change
+  and dispersion for RNA-seq data with DESeq2 Genome Biology 15(12):550
+  (2014)
+
+Ein BibTeX-Eintrag für LaTeX-Benutzer ist
+
+  @Article{,
+    title = {Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2},
+    author = {Michael I. Love and Wolfgang Huber and Simon Anders},
+    year = {2014},
+    journal = {Genome Biology},
+    doi = {10.1186/s13059-014-0550-8},
+    volume = {15},
+    issue = {12},
+    pages = {550},
+  }
+[1] "apeglm"
+Um Paket ‘apeglm’ in Publikationen zu zitieren, nutzen Sie bitte:
+
+  Zhu, A., Ibrahim, J.G., Love, M.I. Heavy-tailed prior distributions
+  for sequence count data: removing the noise and preserving large
+  differences Bioinformatics (2018)
+
+Ein BibTeX-Eintrag für LaTeX-Benutzer ist
+
+  @Article{,
+    title = {Heavy-tailed prior distributions for sequence count data: removing the noise and preserving large differences},
+    author = {Anqi Zhu and Joseph G. Ibrahim and Michael I. Love},
+    year = {2018},
+    journal = {Bioinformatics},
+    doi = {10.1093/bioinformatics/bty895},
+  }
+[1] "sva"
+Um Paket ‘sva’ in Publikationen zu zitieren, nutzen Sie bitte:
+
+  Leek JT, Johnson WE, Parker HS, Fertig EJ, Jaffe AE, Zhang Y, Storey
+  JD, Torres LC (2023). _sva: Surrogate Variable Analysis_.
+  doi:10.18129/B9.bioc.sva <https://doi.org/10.18129/B9.bioc.sva>, R
+  package version 3.50.0, <https://bioconductor.org/packages/sva>.
+
+Ein BibTeX-Eintrag für LaTeX-Benutzer ist
+
+  @Manual{,
+    title = {sva: Surrogate Variable Analysis},
+    author = {Jeffrey T. Leek and W. Evan Johnson and Hilary S. Parker and Elana J. Fertig and Andrew E. Jaffe and Yuqing Zhang and John D. Storey and Leonardo Collado Torres},
+    year = {2023},
+    note = {R package version 3.50.0},
+    url = {https://bioconductor.org/packages/sva},
+    doi = {10.18129/B9.bioc.sva},
+  }
+
+ACHTUNG: Diese Zitationsinformation wurde aus der DESCRIPTION-Datei
+automatisch generiert. Evtl. ist manuelle Nachbearbeitung nötig, siehe
+‘help("citation")’.
+[1] "vsn"
+To cite the vsn package in publications use:
+
+  Wolfgang Huber, Anja von Heydebreck, Holger Sueltmann, Annemarie
+  Poustka and Martin Vingron. Variance Stabilization Applied to
+  Microarray Data Calibration and to the Quantification of Differential
+  Expression. Bioinformatics 18, S96-S104 (2002).
+
+Ein BibTeX-Eintrag für LaTeX-Benutzer ist
+
+  @Article{,
+    title = {Variance Stabilization Applied to Microarray Data Calibration and to the Quantification of Differential Expression},
+    author = {Wolfgang Huber and Anja {von Heydebreck} and Holger Sueltmann and Annemarie Poustka and Martin Vingron},
+    journal = {Bioinformatics},
+    year = {2002},
+    volume = {18 Suppl. 1},
+    pages = {S96-S104},
+  }
+[1] "dplyr"
+Um Paket ‘dplyr’ in Publikationen zu zitieren, nutzen Sie bitte:
+
+  Wickham H, François R, Henry L, Müller K, Vaughan D (2023). _dplyr: A
+  Grammar of Data Manipulation_. R package version 1.1.4,
+  <https://CRAN.R-project.org/package=dplyr>.
+
+Ein BibTeX-Eintrag für LaTeX-Benutzer ist
+
+  @Manual{,
+    title = {dplyr: A Grammar of Data Manipulation},
+    author = {Hadley Wickham and Romain François and Lionel Henry and Kirill Müller and Davis Vaughan},
+    year = {2023},
+    note = {R package version 1.1.4},
+    url = {https://CRAN.R-project.org/package=dplyr},
+  }
+[1] "stats"
+The ‘stats’ package is part of R.  To cite R in publications use:
+
+  R Core Team (2023). _R: A Language and Environment for Statistical
+  Computing_. R Foundation for Statistical Computing, Vienna, Austria.
+  <https://www.R-project.org/>.
+
+Ein BibTeX-Eintrag für LaTeX-Benutzer ist
+
+  @Manual{,
+    title = {R: A Language and Environment for Statistical Computing},
+    author = {{R Core Team}},
+    organization = {R Foundation for Statistical Computing},
+    address = {Vienna, Austria},
+    year = {2023},
+    url = {https://www.R-project.org/},
+  }
+
+We have invested a lot of time and effort in creating R, please cite it
+when using it for data analysis. See also ‘citation("pkgname")’ for
+citing R packages.
+[1] "dfidx"
+Um Paket ‘dfidx’ in Publikationen zu zitieren, nutzen Sie bitte:
+
+  Croissant Y (2022). _dfidx: Indexed Data Frames_. R package version
+  0.0-5, <https://CRAN.R-project.org/package=dfidx>.
+
+Ein BibTeX-Eintrag für LaTeX-Benutzer ist
+
+  @Manual{,
+    title = {dfidx: Indexed Data Frames},
+    author = {Yves Croissant},
+    year = {2022},
+    note = {R package version 0.0-5},
+    url = {https://CRAN.R-project.org/package=dfidx},
+  }
+[1] "ggplot2"
+To cite ggplot2 in publications, please use
+
+  H. Wickham. ggplot2: Elegant Graphics for Data Analysis.
+  Springer-Verlag New York, 2016.
+
+Ein BibTeX-Eintrag für LaTeX-Benutzer ist
+
+  @Book{,
+    author = {Hadley Wickham},
+    title = {ggplot2: Elegant Graphics for Data Analysis},
+    publisher = {Springer-Verlag New York},
+    year = {2016},
+    isbn = {978-3-319-24277-4},
+    url = {https://ggplot2.tidyverse.org},
+  }
+[1] "ggpubr"
+Um Paket ‘ggpubr’ in Publikationen zu zitieren, nutzen Sie bitte:
+
+  Kassambara A (2023). _ggpubr: 'ggplot2' Based Publication Ready
+  Plots_. R package version 0.6.0,
+  <https://CRAN.R-project.org/package=ggpubr>.
+
+Ein BibTeX-Eintrag für LaTeX-Benutzer ist
+
+  @Manual{,
+    title = {ggpubr: 'ggplot2' Based Publication Ready Plots},
+    author = {Alboukadel Kassambara},
+    year = {2023},
+    note = {R package version 0.6.0},
+    url = {https://CRAN.R-project.org/package=ggpubr},
+  }
+[1] "ggfortify"
+To cite ggfortify in publications, please use:
+
+  Yuan Tang, Masaaki Horikoshi, and Wenxuan Li. "ggfortify: Unified
+  Interface to Visualize Statistical Result of Popular R Packages." The
+  R Journal 8.2 (2016): 478-489.
+
+  Masaaki Horikoshi and Yuan Tang (2016). ggfortify: Data Visualization
+  Tools for Statistical Analysis Results.
+  https://CRAN.R-project.org/package=ggfortify
+
+To see these entries in BibTeX format, use 'print(<citation>,
+bibtex=TRUE)', 'toBibtex(.)', or set
+'options(citation.bibtex.max=999)'.
+[1] "pheatmap"
+Um Paket ‘pheatmap’ in Publikationen zu zitieren, nutzen Sie bitte:
+
+  Kolde R (2019). _pheatmap: Pretty Heatmaps_. R package version
+  1.0.12, <https://CRAN.R-project.org/package=pheatmap>.
+
+Ein BibTeX-Eintrag für LaTeX-Benutzer ist
+
+  @Manual{,
+    title = {pheatmap: Pretty Heatmaps},
+    author = {Raivo Kolde},
+    year = {2019},
+    note = {R package version 1.0.12},
+    url = {https://CRAN.R-project.org/package=pheatmap},
+  }
+
+ACHTUNG: Diese Zitationsinformation wurde aus der DESCRIPTION-Datei
+automatisch generiert. Evtl. ist manuelle Nachbearbeitung nötig, siehe
+‘help("citation")’.
+[1] "rmarkdown"
+Um Paket ‘rmarkdown’ in Publikationen zu zitieren, nutzen Sie bitte:
+
+  Allaire J, Xie Y, Dervieux C, McPherson J, Luraschi J, Ushey K,
+  Atkins A, Wickham H, Cheng J, Chang W, Iannone R (2023). _rmarkdown:
+  Dynamic Documents for R_. R package version 2.25,
+  <https://github.com/rstudio/rmarkdown>.
+
+  Xie Y, Allaire J, Grolemund G (2018). _R Markdown: The Definitive
+  Guide_. Chapman and Hall/CRC, Boca Raton, Florida. ISBN
+  9781138359338, <https://bookdown.org/yihui/rmarkdown>.
+
+  Xie Y, Dervieux C, Riederer E (2020). _R Markdown Cookbook_. Chapman
+  and Hall/CRC, Boca Raton, Florida. ISBN 9780367563837,
+  <https://bookdown.org/yihui/rmarkdown-cookbook>.
+
+To see these entries in BibTeX format, use 'print(<citation>,
+bibtex=TRUE)', 'toBibtex(.)', or set
+'options(citation.bibtex.max=999)'.

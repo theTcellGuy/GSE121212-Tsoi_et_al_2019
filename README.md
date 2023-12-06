@@ -3,7 +3,7 @@
 This is an R script to conduct differential expression analysis of the public data set GSE121212 on the GEO data base repository. The data were created by Tsoi _et al._ in their study from 2019.
 It starts from the meta data and processed reads.
 
-doi: https://doi.org/10.1016/j.jid.2018.12.0183
+doi: https://doi.org/10.1016/j.jid.2018.12.018
 GEO data set link: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE121212
 GEO accession number: GSE121212
 
